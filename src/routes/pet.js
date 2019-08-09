@@ -16,7 +16,12 @@ router.get('/', verifyToken, async (req, res) => {
 router.get('/:id', verifyToken, async (req, res) => {
 
     const userPet = await Pet.findById(req.params.id);
-    res.send(userPet);
+    if (JSON.stringify(userPet.owner[0]) === JSON.stringify(req.user._id)) {
+        res.send(userPet);
+    } else {
+        res.send('Wrong');
+    }
+
 
 });
 
@@ -30,21 +35,29 @@ router.post('/', verifyToken, async (req, res) => {
 
 router.put('/:id', verifyToken, async (req, res) => {
     const petId = req.params.id;
-    const editPet = req.body;
-    const pet = await Pet.findByIdAndUpdate(petId, editPet);
-    await pet.save();
-    res.send('Updated');
+
+    const userPet = await Pet.findById(petId);
+    if (JSON.stringify(userPet.owner[0]) === JSON.stringify(req.user._id)) {
+        const editPet = req.body;
+        const pet = await Pet.findByIdAndUpdate(petId, editPet);
+        await pet.save();
+        res.send('Updated');
+    } else {
+        res.send('Wrong');
+    }
 });
 
 router.delete('/:id', verifyToken, async (req, res) => {
     const petId = req.params.id;
-    const pet = await Pet.findByIdAndRemove(petId);
-    res.send('Deleted');
+
+    const userPet = await Pet.findById(petId);
+    if (JSON.stringify(userPet.owner[0]) === JSON.stringify(req.user._id)) {
+        const pet = await Pet.findByIdAndRemove(petId);
+        res.send('Deleted');
+    } else {
+        res.send('Wrong');
+    }
 });
-
-
-
-
 
 
 module.exports = router;
